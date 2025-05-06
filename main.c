@@ -1,5 +1,4 @@
 #include <stdio.h>
-#include <stdlib.h>
 #include <string.h>
 
 
@@ -8,26 +7,25 @@ typedef struct {
     char ownerName[50];
     double balance;
     
-    // Statistics for current session
+    /*current session*/
     int numDeposits;
     int numWithdraws;
     int numTransfers;
     double totalMoneyIn;
     double totalMoneyOut;
-    
-    // Statistics for all time (for administrator)
-    int totalNumDeposits;
-    int totalNumWithdraws;
-    int totalNumTransfers;
 } Account;
 
-// Global variables
+
 Account accounts[3];
 double totalProfit = 0.0;
-const double WITHDRAW_FEE_RATE = 0.01;  // 1%
-const double TRANSFER_FEE_RATE = 0.025; // 2.5%
+const double WITHDRAW_FEE_RATE = 0.01;  /* 1% */
+const double TRANSFER_FEE_RATE = 0.025; /* 2.5% */
+/*global session*/
+int totalNumDeposits = 0;
+int totalNumTransfers = 0;
+int totalNumWithdraws = 0;
 
-// Function prototypes
+
 void init();
 void display();
 void handleAccountOperations(int accountIndex);
@@ -37,14 +35,13 @@ void depositMoney(int accountIndex);
 void withdrawMoney(int accountIndex);
 void transferMoney(int accountIndex);
 void displaySummary(int accountIndex);
-void viewTotalProfit();
+void viewtotalProfit();
 void viewMostPopularOperation();
 void reset(int accountIndex);
 
 int main() {
     int choice;
     
-    // Initialize account data
     init();
     
     while (1) {
@@ -53,13 +50,10 @@ int main() {
         scanf("%d", &choice);
         
         if (choice == 1 || choice == 2 || choice == 3) {
-            // Account operations
             handleAccountOperations(choice - 1);
         } else if (choice == 4) {
-            // Admin operations
             handleAdminOperations();
         } else if (choice == 5) {
-            // Exit the program
             printf("\nThank you for using Riyadh National Bank ATM. Goodbye!\n");
             break;
         } else {
@@ -70,44 +64,33 @@ int main() {
     return 0;
 }
 
-// Initialize account data with predefined values
 void init() {
-    // Account 1
     accounts[0].accountNumber = 1001;
     strcpy(accounts[0].ownerName, "Ahmed Abdullah");
     accounts[0].balance = 5000.0;
     reset(0);
-    accounts[0].totalNumDeposits = 0;
-    accounts[0].totalNumWithdraws = 0;
-    accounts[0].totalNumTransfers = 0;
     
-    // Account 2
     accounts[1].accountNumber = 1002;
     strcpy(accounts[1].ownerName, "Sarah Mohammed");
     accounts[1].balance = 7500.0;
     reset(1);
-    accounts[1].totalNumDeposits = 0;
-    accounts[1].totalNumWithdraws = 0;
-    accounts[1].totalNumTransfers = 0;
-    
-    // Account 3
+
     accounts[2].accountNumber = 1003;
     strcpy(accounts[2].ownerName, "Khalid Al-Saud");
     accounts[2].balance = 10000.0;
     reset(2);
-    accounts[2].totalNumDeposits = 0;
-    accounts[2].totalNumWithdraws = 0;
-    accounts[2].totalNumTransfers = 0;
 }
 
-// Display the main menu (Account Selection Menu)
+/*main menu*/
 void display() {
     printf("\n==================================\n");
     printf("    RIYADH NATIONAL BANK ATM     \n");
     printf("==================================\n");
     printf("Please select an account or login as administrator:\n\n");
     
-    for (int i = 0; i < 3; i++) {
+
+    int i;
+    for(i=0; i < 3; i++) {
         printf("%d. Account #%d (%s)\n", i + 1, accounts[i].accountNumber, accounts[i].ownerName);
     }
     
@@ -116,15 +99,10 @@ void display() {
     printf("==================================\n");
 }
 
-// Handle account operations menu and actions
 void handleAccountOperations(int accountIndex) {
     int choice;
     
-    // Reset session statistics when logging in
-    reset(accountIndex);
-    
     while (1) {
-        // Display Account Operations Menu
         printf("\n==================================\n");
         printf("    ACCOUNT OPERATIONS MENU     \n");
         printf("==================================\n");
@@ -160,8 +138,8 @@ void handleAccountOperations(int accountIndex) {
                 break;
                 
             case 5:
-                // Display transactions summary before returning to main menu
                 displaySummary(accountIndex);
+                reset(accountIndex);/*wipe current session*/
                 return;
                 
             default:
@@ -170,16 +148,15 @@ void handleAccountOperations(int accountIndex) {
     }
 }
 
-// Handle administrator operations menu and actions
+
 void handleAdminOperations() {
     int choice;
     
     while (1) {
-        // Display Administrator Menu
         printf("\n==================================\n");
         printf("      ADMINISTRATOR MENU        \n");
         printf("==================================\n");
-        printf("1. View Total Profit\n");
+        printf("1. View total Profit\n");
         printf("2. Most Popular Operation\n");
         printf("3. Exit\n");
         printf("==================================\n");
@@ -189,7 +166,7 @@ void handleAdminOperations() {
         
         switch (choice) {
             case 1:
-                viewTotalProfit();
+                viewtotalProfit();
                 break;
                 
             case 2:
@@ -205,7 +182,7 @@ void handleAdminOperations() {
     }
 }
 
-// View account balance
+
 void viewBalance(int accountIndex) {
     printf("\n==================================\n");
     printf("          ACCOUNT BALANCE        \n");
@@ -217,7 +194,7 @@ void viewBalance(int accountIndex) {
     printf("==================================\n");
 }
 
-// Deposit money into account
+
 void depositMoney(int accountIndex) {
     double amount;
     
@@ -235,7 +212,7 @@ void depositMoney(int accountIndex) {
     
     accounts[accountIndex].balance += amount;
     accounts[accountIndex].numDeposits++;
-    accounts[accountIndex].totalNumDeposits++;
+    totalNumDeposits++;
     accounts[accountIndex].totalMoneyIn += amount;
     
     printf("\nDeposit successful!\n");
@@ -243,7 +220,7 @@ void depositMoney(int accountIndex) {
     printf("==================================\n");
 }
 
-// Withdraw money from account
+
 void withdrawMoney(int accountIndex) {
     double amount, fee;
     
@@ -262,13 +239,13 @@ void withdrawMoney(int accountIndex) {
     fee = amount * WITHDRAW_FEE_RATE;
     
     if (amount + fee > accounts[accountIndex].balance) {
-        printf("\nError: Insufficient funds. Total required: %.2f SAR\n", amount + fee);
+        printf("\nError: Insufficient funds. total required: %.2f SAR\n", amount + fee);
         return;
     }
     
     accounts[accountIndex].balance -= (amount + fee);
     accounts[accountIndex].numWithdraws++;
-    accounts[accountIndex].totalNumWithdraws++;
+    totalNumWithdraws++;
     accounts[accountIndex].totalMoneyOut += (amount + fee);
     totalProfit += fee;
     
@@ -279,7 +256,7 @@ void withdrawMoney(int accountIndex) {
     printf("==================================\n");
 }
 
-// Transfer money to another account
+
 void transferMoney(int accountIndex) {
     int targetAccountIndex;
     double amount, fee;
@@ -289,7 +266,9 @@ void transferMoney(int accountIndex) {
     printf("==================================\n");
     
     printf("Available accounts for transfer:\n");
-    for (int i = 0; i < 3; i++) {
+
+    int i;
+    for(i=0; i < 3; i++) {
         if (i != accountIndex) {
             printf("%d. Account #%d (%s)\n", i + 1, accounts[i].accountNumber, accounts[i].ownerName);
         }
@@ -298,7 +277,7 @@ void transferMoney(int accountIndex) {
     printf("\nEnter the account number (1-3): ");
     scanf("%d", &targetAccountIndex);
     
-    // Adjust for 0-based indexing
+    /*index at 1 to index at 0*/
     targetAccountIndex--;
     
     if (targetAccountIndex < 0 || targetAccountIndex >= 3 || targetAccountIndex == accountIndex) {
@@ -317,14 +296,14 @@ void transferMoney(int accountIndex) {
     fee = amount * TRANSFER_FEE_RATE;
     
     if (amount + fee > accounts[accountIndex].balance) {
-        printf("\nError: Insufficient funds. Total required: %.2f SAR\n", amount + fee);
+        printf("\nError: Insufficient funds. total required: %.2f SAR\n", amount + fee);
         return;
     }
     
     accounts[accountIndex].balance -= (amount + fee);
     accounts[targetAccountIndex].balance += amount;
     accounts[accountIndex].numTransfers++;
-    accounts[accountIndex].totalNumTransfers++;
+    totalNumTransfers++;
     accounts[accountIndex].totalMoneyOut += (amount + fee);
     accounts[targetAccountIndex].totalMoneyIn += amount;
     totalProfit += fee;
@@ -336,7 +315,7 @@ void transferMoney(int accountIndex) {
     printf("==================================\n");
 }
 
-// Display transaction summary for the current session
+/*current session*/
 void displaySummary(int accountIndex) {
     printf("\n==================================\n");
     printf("      TRANSACTIONS SUMMARY       \n");
@@ -348,59 +327,50 @@ void displaySummary(int accountIndex) {
     printf("Number of deposits: %d\n", accounts[accountIndex].numDeposits);
     printf("Number of withdrawals: %d\n", accounts[accountIndex].numWithdraws);
     printf("Number of transfers: %d\n", accounts[accountIndex].numTransfers);
-    printf("Total money in: %.2f SAR\n", accounts[accountIndex].totalMoneyIn);
-    printf("Total money out: %.2f SAR\n", accounts[accountIndex].totalMoneyOut);
+    printf("total money in: %.2f SAR\n", accounts[accountIndex].totalMoneyIn);
+    printf("total money out: %.2f SAR\n", accounts[accountIndex].totalMoneyOut);
     printf("==================================\n");
 }
 
-// View total profit from fees (admin function)
-void viewTotalProfit() {
+
+void viewtotalProfit() {
     printf("\n==================================\n");
-    printf("          TOTAL PROFIT           \n");
+    printf("          total PROFIT           \n");
     printf("==================================\n");
-    printf("Total profit from all fees: %.2f SAR\n", totalProfit);
+    printf("total profit from all fees: %.2f SAR\n", totalProfit);
     printf("==================================\n");
 }
 
-// View most popular operation across all accounts (admin function)
+
 void viewMostPopularOperation() {
-    int totalDeposits = 0, totalWithdraws = 0, totalTransfers = 0;
-    
-    // Count total operations across all accounts
-    for (int i = 0; i < 3; i++) {
-        totalDeposits += accounts[i].totalNumDeposits;
-        totalWithdraws += accounts[i].totalNumWithdraws;
-        totalTransfers += accounts[i].totalNumTransfers;
-    }
-    
     printf("\n==================================\n");
     printf("      MOST POPULAR OPERATION     \n");
     printf("==================================\n");
     
-    // Find the maximum operation count
-    int maxCount = totalDeposits;
-    if (totalWithdraws > maxCount) maxCount = totalWithdraws;
-    if (totalTransfers > maxCount) maxCount = totalTransfers;
+    /*max*/
+    int maxCount = totalNumDeposits;
+    if (totalNumWithdraws > maxCount) maxCount = totalNumWithdraws;
+    if (totalNumTransfers > maxCount) maxCount = totalNumTransfers;
     
-    // Display the most popular operation(s)
+
     if (maxCount == 0) {
         printf("No operations have been performed yet.\n");
     } else {
-        if (totalDeposits == maxCount) {
-            printf("Deposit: %d operations\n", totalDeposits);
+        if (totalNumDeposits == maxCount) {
+            printf("Deposit: %d operations\n", totalNumDeposits);
         }
-        if (totalWithdraws == maxCount) {
-            printf("Withdraw: %d operations\n", totalWithdraws);
+        if (totalNumWithdraws == maxCount) {
+            printf("Withdraw: %d operations\n", totalNumWithdraws);
         }
-        if (totalTransfers == maxCount) {
-            printf("Transfer: %d operations\n", totalTransfers);
+        if (totalNumTransfers == maxCount) {
+            printf("Transfer: %d operations\n", totalNumTransfers);
         }
     }
     
     printf("==================================\n");
 }
 
-// Reset session statistics for an account
+
 void reset(int accountIndex) {
     accounts[accountIndex].numDeposits = 0;
     accounts[accountIndex].numWithdraws = 0;
